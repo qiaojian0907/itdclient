@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ArServiceRepository">
+
+    <select id="selectRoleCreateLogin" parameterType="com.omt.systemManagement.dto.RoleInfoDto"
+            resultType="com.omt.common.jsTree.JSTreeSDto">
+        select role_id as id,role_name as text,
+        'jstree-file' as icon
+        from omt_sys_role_info <!--where create_login= #{create_login}-->
+    </select>
+    <select id="getRoleid" resultType="int">
+        select auto_increment from information_schema.tables where table_name='role_info';
+    </select>
+    <insert
+            id="addRoleInfo"
+            parameterType="com.omt.systemManagement.dto.RoleInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="role_id"
+            timeout="20">
+        insert into omt_sys_role_info (role_name,note,create_login,create_date)
+        values(#{role_name},#{note},#{create_login},now());
+    </insert>
+    <insert
+            id="insertRoleFuncRel"
+            parameterType="com.omt.systemManagement.dto.RoleInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="role_id"
+            timeout="20">
+        insert into omt_sys_rolefunc_rel(role_id,func_id,create_date)
+        select DISTINCT #{role_id},parent_id,now() from omt_sys_func_rel where func_id in (${func_select})
+        <!-- select #{role_id},func_id,now() from func_info where func_id in (${func_select})  -->
+    </insert>
+    <delete
+            id="deleteRoleFuncRel"
+            parameterType="com.omt.systemManagement.dto.RoleInfoDto"
+            timeout="20">
+        delete from omt_sys_rolefunc_rel  where role_id=#{role_id}
+    </delete>
+    <update
+            id="updateRoleInfo"
+            parameterType="com.omt.systemManagement.dto.RoleInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="role_id"
+            timeout="20">
+        update omt_sys_role_info set role_name=#{role_name},update_login=#{update_login},note=#{note}
+        where role_id=#{role_id};
+    </update>
+    <delete
+            id="deleteRoleInfo"
+            parameterType="com.omt.systemManagement.dto.RoleInfoDto"
+            timeout="20">
+        delete a,b from omt_sys_role_info a left JOIN omt_sys_rolefunc_rel b  on a.role_id=b.role_id where a.role_id=#{role_id};
+    </delete>
+    <select id="getRoleFuncid" parameterType="com.omt.systemManagement.dto.RoleInfoDto"
+            resultType="com.omt.systemManagement.dto.RoleInfoDto">
+        select group_concat(a.func_id) func_select from omt_sys_rolefunc_rel a,omt_sys_func_info b where a.func_id=b.func_id and b.leaf=1 and role_id=#{role_id};
+    </select>
+    <select id="getRoleInfoId" parameterType="com.omt.systemManagement.dto.RoleInfoDto"
+            resultType="com.omt.systemManagement.dto.RoleInfoDto">
+        select role_id,role_name,note from omt_sys_role_info where role_id=#{role_id};
+    </select>
+</mapper>

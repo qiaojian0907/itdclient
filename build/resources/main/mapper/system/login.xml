@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ArServiceRepository">
+    <select id="getLoginInfo"  parameterType="com.omt.systemManagement.dto.LoginInfoDto" resultType="com.omt.systemManagement.dto.LoginInfoDto" >
+        select a.login_id,a.login_no,a.login_name,a.cust_name,a.phone_no,a.org_id,b.org_name,a.sex,a.valid,
+        a.address,a.password,a.note
+        from omt_sys_login_info a,omt_sys_org_info b where a.org_id=b.org_id and a.login_id= #{login_id}
+    </select>
+    <select id="getAvatarByLoginNo" parameterType="com.omt.systemManagement.dto.SessionDto" resultType="com.omt.systemManagement.dto.SessionDto">
+        select login_name as uname,CAST(avatar AS CHAR) AS avatar from omt_sys_login_info where login_no=#{login_no}
+    </select>
+    <select id="getroleInfoByLoginId"  parameterType="com.omt.systemManagement.dto.LoginInfoDto" resultType="com.omt.systemManagement.dto.LoginInfoDto" >
+        select group_concat(a.role_id) role_id,group_concat(b.role_name) role_name
+        from omt_sys_loginrole_rel a,omt_sys_role_info b,omt_sys_login_info c
+        where a.role_id=b.role_id and a.login_no=c.login_no and c.login_id=#{login_id}
+    </select>
+    <select id="getMgOrgByLoginId"  parameterType="com.omt.systemManagement.dto.LoginInfoDto" resultType="com.omt.systemManagement.dto.LoginInfoDto" >
+        select group_concat(a.org_id) mg_org,group_concat(b.org_name) mg_orgname
+        from omt_sys_loginorg_rel a,omt_sys_org_info b,omt_sys_login_info c
+        where a.login_no=c.login_no and a.org_id=b.org_id and c.login_id=#{login_id};
+    </select>
+    <select id="getLoginInfoCount"  parameterType="com.omt.systemManagement.dto.LoginInfoDto" resultType="int" >
+        select count(*)
+        from omt_sys_login_info where 1=1
+        <if test="login_no != null and login_no != ''">
+            and login_no like  CONCAT('%',#{login_no},'%')
+        </if>
+        <if test="login_name != null and login_name != ''">
+            and login_name like  CONCAT('%',#{login_name},'%')
+        </if>
+        <if test="phone_no != null and phone_no != ''">
+            and phone_no like  CONCAT('%',#{phone_no},'%')
+        </if>
+        <if test="org_id != null and org_id != ''">
+            and org_id in (
+            select a.org_id from omt_sys_org_info a,omt_sys_org_rel b where a.org_id=b.org_id and b.parent_id=#{org_id});
+        </if>
+    </select>
+    <select id="getLoginInfoList"  parameterType="com.omt.systemManagement.dto.LoginInfoDto" resultType="java.util.Map" >
+        select a.login_id,a.login_no,a.login_name,a.cust_name,a.phone_no,b.org_name,
+        case when a.sex=1 then '男' when a.sex=0 then '女' else '未知' end as sex,
+        case when a.valid=1 then '是' else '否' end valid
+        from omt_sys_login_info a,omt_sys_org_info b where a.org_id=b.org_id
+        <if test="login_no != null and login_no != ''">
+            and a.login_no like  CONCAT('%',#{login_no},'%')
+        </if>
+        <if test="login_name != null and login_name != ''">
+            and a.login_name like  CONCAT('%',#{login_name},'%')
+        </if>
+        <if test="cust_name != null and login_name != '' != ''">
+            and a.cust_name like  CONCAT('%',#{cust_name},'%')
+        </if>
+        <if test="phone_no != null and phone_no != '' != ''">
+            and a.phone_no like  CONCAT('%',#{phone_no},'%')
+        </if>
+        <if test="org_id != null and org_id != '' != ''">
+            and a.org_id in (
+            select a.org_id from omt_sys_org_info a,omt_sys_org_rel b where a.org_id=b.org_id and b.parent_id=#{org_id});
+        </if>
+    </select>
+    <select id="getLoginid"  resultType="int" >
+        select auto_increment from information_schema.tables where table_name='omt_sys_login_info';
+    </select>
+    <insert
+            id="addLoginInfo"
+            parameterType="com.omt.systemManagement.dto.LoginInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="login_id"
+            timeout="20">
+        insert into omt_sys_login_info
+        (login_no,login_name,cust_name,sex,phone_no,org_id,password,valid,address,note,create_login,avatar,create_date)
+        values (#{login_no},#{login_name},#{cust_name},#{sex},#{phone_no},#{org_id},#{password},
+        #{valid},#{address},#{note},#{create_login},#{avatar,jdbcType=BLOB},now())
+    </insert>
+    <insert
+            id="insertLoginRoleRel"
+            parameterType="com.omt.systemManagement.dto.LoginInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="role_id"
+            timeout="20">
+        insert into omt_sys_loginrole_rel(role_id,login_no,create_date)
+        values(#{role_id},#{login_no},now())
+    </insert>
+    <insert
+            id="insertLoginMgOrgRel"
+            parameterType="com.omt.systemManagement.dto.LoginInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="role_id"
+            timeout="20">
+        insert into omt_sys_loginorg_rel(org_id,login_no,create_date)
+        select org_id,#{login_no},now() from omt_sys_org_info where org_id in (${mg_org})
+    </insert>
+    <delete
+            id="deleteLoginRoleRel"
+            parameterType="com.omt.systemManagement.dto.LoginInfoDto"
+            timeout="20">
+        delete from omt_sys_loginrole_rel  where login_no=#{login_no}
+    </delete>
+    <delete
+            id="deleteLoginMgOrgRel"
+            parameterType="com.omt.systemManagement.dto.LoginInfoDto"
+            timeout="20">
+        delete from omt_sys_loginorg_rel where login_no=#{login_no}
+    </delete>
+    <update
+            id="updateLoginInfo"
+            parameterType="com.omt.systemManagement.dto.LoginInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="role_id"
+            timeout="20">
+        update omt_sys_login_info set login_name=#{login_name},cust_name=#{cust_name},phone_no=#{phone_no},
+        org_id=#{org_id},password=#{password},valid=#{valid},address=#{address},
+        note=#{note},update_login=#{update_login}
+        where login_id=#{login_id};
+    </update>
+    <delete
+            id="deleteLoginInfo"
+            parameterType="com.omt.systemManagement.dto.LoginInfoDto"
+            timeout="20">
+        delete a,b,c from omt_sys_login_info a left join omt_sys_loginrole_rel b on a.login_no=b.login_no
+        left join omt_sys_loginorg_rel c on a.login_no=c.login_no
+        where a.login_id=#{login_id};
+    </delete>
+    <select id="selectPassword"  parameterType="com.omt.systemManagement.dto.LoginInfoDto" resultType="String" >
+        select password from omt_sys_login_info where login_no = #{login_no}
+    </select>
+
+    <select id="selectLoginInfoByLoginNo"  parameterType="com.omt.systemManagement.dto.LoginInfoDto" resultType="com.omt.systemManagement.dto.LoginInfoDto" >
+        select a.login_id,a.login_no,a.login_name,a.cust_name,a.phone_no,a.org_id,b.org_name,a.sex,a.valid,
+        a.address,a.password,a.note
+        from omt_sys_login_info a,omt_sys_org_info b where a.org_id=b.org_id and a.login_no= #{login_no}
+    </select>
+</mapper>

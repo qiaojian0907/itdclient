@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ArServiceRepository">
+    <select id="getParentId"  parameterType="com.omt.common.jsTree.JSTreeDto" resultType="com.omt.common.jsTree.JSTreeNonOpenDto" >
+        select a.org_id as id,a.org_name as text,
+        case when a.leaf=1 then 'jstree-file' else null end as icon,case when a.leaf=1 then false else true end as children
+        from omt_sys_org_info a where a.org_id= #{id}
+    </select>
+    <select id="selectOrgParentId"  parameterType="com.omt.common.jsTree.JSTreeDto" resultType="com.omt.common.jsTree.JSTreeNonOpenDto" >
+        select a.org_id as id,a.org_name as text,
+        case when a.leaf=1 then 'jstree-file' else null end as icon,case when a.leaf=1 then false else true end as children
+        from omt_sys_org_info a,omt_sys_org_rel b where a.org_id=b.org_id and b.parent_id= #{id} and b.node_level=1 order by a.sort_level
+    </select>
+    <select id="selectOrgInfoParentId"  parameterType="com.omt.common.jsTree.JSTreeDto" resultType="com.omt.systemManagement.dto.OrgInfoDto" >
+        select a.org_name,a.org_id,a.org_code,a.note,a.leaf,a.dparent_id,a.sort_level
+        from omt_sys_org_info a,omt_sys_org_rel b where a.org_id=b.org_id and b.parent_id=#{id} order by a.sort_level
+    </select>
+    <insert
+            id="addOrgInfo"
+            parameterType="com.omt.systemManagement.dto.OrgInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="org_id"
+            timeout="20">
+        insert into omt_sys_org_info (org_name,note,leaf,sort_level,create_date,update_date,dparent_id)
+        values(#{org_name},#{note},true,#{sort_level},now(),now(),#{dparent_id});
+    </insert>
+    <insert
+            id="insertOrgRel"
+            parameterType="com.omt.systemManagement.dto.OrgInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="org_id"
+            timeout="20">
+        insert into omt_sys_org_rel(org_id,parent_id,node_level,create_date,update_date)
+        select #{org_id},parent_id,node_level+1,now(),now() from omt_sys_org_rel where org_id=#{dparent_id}
+        union
+        select #{org_id},#{org_id},0,now(),now() from dual;
+    </insert>
+    <select id="getOrgid"  resultType="int" >
+        select auto_increment from information_schema.tables where table_name='omt_sys_org_info';
+    </select>
+    <select id="getOrgInfoByParent" parameterType="String"  resultType="com.omt.systemManagement.dto.OrgInfoDto" >
+        select org_id,org_name from omt_sys_org_info where dparent_id=#{org_id};
+    </select>
+    <update
+            id="updateOrgInfo"
+            parameterType="com.omt.systemManagement.dto.OrgInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="org_id"
+            timeout="20">
+        update omt_sys_org_info set org_name=#{org_name},note=#{note},sort_level=#{sort_level}
+        where org_id=#{org_id};
+    </update>
+    <delete
+            id="deleteOrgInfoAndOrgRel"
+            parameterType="com.omt.systemManagement.dto.RoleInfoDto"
+            timeout="20">
+        delete a,b from omt_sys_org_info a,omt_sys_org_rel b where a.org_id=b.org_id and b.org_id=#{org_id};
+    </delete>
+    <update
+            id="updateOrgInfoLeaf"
+            parameterType="com.omt.systemManagement.dto.OrgInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="org_id"
+            timeout="20">
+        update omt_sys_org_info set leaf=#{leaf} where org_id=#{dparent_id}
+    </update>
+    <select id="getrelnum"  parameterType="com.omt.systemManagement.dto.OrgInfoDto"  resultType="int" >
+        select count(*) from omt_sys_org_rel  where parent_id=#{dparent_id}
+    </select>
+    <select id="getOrgInfoParentId"  parameterType="com.omt.common.jsTree.JSTreeDto" resultType="com.omt.systemManagement.dto.OrgInfoDto" >
+       select a.org_name,a.org_id,a.note,a.leaf,a.dparent_id,a.sort_level from omt_sys_org_info a,omt_sys_org_rel b where a.org_id=b.org_id and b.parent_id=#{id}
+       order by b.node_level desc,a.sort_level asc
+    </select>
+</mapper>

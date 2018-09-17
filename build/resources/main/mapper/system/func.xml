@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ArServiceRepository">
+
+    <select id="selectFuncParentId" parameterType="com.omt.common.jsTree.JSTreeDto" resultType="com.omt.common.jsTree.JSTreeDto" >
+       select a.func_id as id,a.func_name as text,
+       case when a.leaf=1 then 'jstree-file' else null end as icon,case when a.leaf=1 then false else true end as children
+        from omt_sys_func_info a,omt_sys_func_rel b where a.func_id=b.func_id and b.parent_id= #{id} and b.node_level=1
+        order by b.node_level desc,a.sort_level asc
+    </select>
+    <insert
+            id="addFuncInfo"
+            parameterType="com.omt.systemManagement.dto.FuncInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="func_id"
+            timeout="20">
+        insert into omt_sys_func_info (func_name,page_url,note,leaf,sort_level,create_date,dparent_id)
+        values(#{func_name},#{page_url},#{note},true,#{sort_level},now(),#{dparent_id});
+    </insert>
+    <insert
+            id="insertFuncRel"
+            parameterType="com.omt.systemManagement.dto.FuncInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="func_id"
+            timeout="20">
+        insert into omt_sys_func_rel(func_id,parent_id,node_level,create_date)
+        select #{func_id},parent_id,node_level+1,now() from omt_sys_func_rel where func_id=#{dparent_id}
+        union
+        select #{func_id},#{func_id},0,now() from dual;
+    </insert>
+    <update
+            id="updateFuncInfo"
+            parameterType="com.omt.systemManagement.dto.FuncInfoDto"
+            useGeneratedKeys="true"
+            keyProperty="func_id"
+            timeout="20">
+        update omt_sys_func_info set func_name=#{func_name},page_url=#{page_url},note=#{note},sort_level=#{sort_level}
+        where func_id=#{func_id};
+    </update>
+    <delete
+             id="deleteFuncInfoAndFuncRel"
+             parameterType="com.omt.systemManagement.dto.FuncInfoDto"
+             timeout="20">
+        delete a,b from omt_sys_func_info a,omt_sys_func_rel b where a.func_id=b.func_id and b.func_id=#{func_id};
+    </delete>
+    <select id="getFuncRelnum"  parameterType="com.omt.systemManagement.dto.FuncInfoDto"  resultType="int" >
+        select count(*) from omt_sys_func_info  where dparent_id=#{dparent_id}
+    </select>
+    <update
+             id="updateFuncInfoLeaf"
+             parameterType="com.omt.systemManagement.dto.FuncInfoDto"
+             useGeneratedKeys="true"
+             keyProperty="func_id"
+             timeout="20">
+        update omt_sys_func_info set leaf=#{leaf} where func_id=#{dparent_id}
+    </update>
+    <select id="selectFuncInfoParentId"  parameterType="com.omt.common.jsTree.JSTreeDto" resultType="com.omt.systemManagement.dto.FuncInfoDto" >
+        select a.func_name,a.func_id,a.page_url,a.note,a.leaf,a.dparent_id,a.sort_level
+        from omt_sys_func_info a,omt_sys_func_rel b where a.func_id=b.func_id and b.parent_id=#{id}
+        order by b.node_level desc,a.sort_level asc
+    </select>
+    <select id="getFuncInfoParentId"  parameterType="com.omt.common.jsTree.JSTreeDto" resultType="com.omt.systemManagement.dto.FuncInfoDto" >
+        select a.func_name,a.func_id,a.note,a.leaf,a.dparent_id,a.sort_level
+        from omt_sys_func_info a,omt_sys_func_rel b
+        where a.func_id=b.func_id and b.parent_id=#{id}
+        order by b.node_level desc,a.sort_level asc
+    </select>
+    <select id="getFuncid"  resultType="int" >
+        select auto_increment from information_schema.tables where table_name='omt_sys_func_info';
+    </select>
+    <select id="getFuncUid"  parameterType="com.omt.systemManagement.dto.LoginInfoDto"  resultType="com.omt.systemManagement.dto.FuncInfoDto" >
+        select DISTINCT a.func_id,a.func_name,a.page_url,a.leaf,a.dparent_id,
+        case when a.leaf=1 then
+        concat('&lt;li id="',a.page_url,'">&lt;a href="',a.page_url,'">&lt;i class="fa fa-gear">&lt;/i>',a.func_name,'&lt;/a>&lt;/li>')
+        else
+        concat('&lt;ul class="sidebar-menu" data-widget="tree">&lt;li class="treeview">&lt;a href="#">&lt;i class="fa fa-gears">&lt;/i>&lt;span>',a.func_name,'&lt;/span>&lt;span class="pull-right-container">&lt;i class="fa fa-angle-left pull-right">&lt;/i>&lt;/span>&lt;/a>&lt;ul class="treeview-menu">')
+        end html,node_level   ,    sort_level
+        from omt_sys_func_info a,omt_sys_func_rel b,omt_sys_rolefunc_rel c,omt_sys_loginrole_rel d
+        where a.func_id=b.func_id and b.func_id=c.func_id and c.role_id=d.role_id and d.login_no=#{login_no}
+        and b.parent_id=0 order by node_level desc,sort_level asc;
+    </select>
+</mapper>

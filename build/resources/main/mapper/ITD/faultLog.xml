@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="faultLogInfo">
+    <insert id="addFaultLogInfo" parameterType="com.omt.ITD.dto.FaultLogDto">
+        insert into omt_inf_faultlog_info(
+          start_time,
+          fault_name,
+          fault_equipment,
+          status,
+          station,
+          road,
+          entry,
+          problem_description,
+          fault_code)
+        values(current_timestamp(),#{fault_name},#{fault_equipment},'0',#{station},#{road},#{entry},#{problem_description},#{fault_code})
+    </insert>
+
+    <update id="updateFaultlogInfo" parameterType="com.omt.ITD.dto.FaultLogDto">
+        update omt_inf_faultlog_info
+        <set>
+            <if test="status !='' and status!=null">
+                status = #{status},
+            </if>
+            <if test="end_time !='' and end_time!=null">
+                end_time =  current_timestamp(),
+            </if>
+            <if test="repair_no !='' and repair_no!=null">
+                repair_no = #{repair_no},
+            </if>
+            <if test="repair_name !='' and repair_name!=null">
+                repair_name = #{repair_name},
+            </if>
+            <if test="oper_no !='' and oper_no!=null">
+                oper_no = #{oper_no},
+            </if>
+            <if test="oper_name !='' and oper_name!=null">
+                oper_name = #{oper_name},
+            </if>
+            <if test="oper_date !='' and oper_date!=null">
+                oper_date = current_timestamp(),
+            </if>
+            <if test="recept_time !='' and recept_time!=null">
+                recept_time = current_timestamp(),
+            </if>
+            <if test="assignee !='' and assignee!=null">
+                assignee = #{assignee},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="faultLogInfoQry" parameterType="com.omt.ITD.dto.FaultLogDto"  resultType="com.omt.ITD.dto.FaultLogDto">
+        select  a.id,
+                date_format(a.start_time,'%Y-%m-%d %H:%i:%s') as start_time_str,
+                a.fault_name,
+                a.end_time as end_time_str,
+                (select b.equipment_name from omt_inf_itdequipment_dict b where a.fault_equipment=b.equipment_type) as fault_equipment,
+                a.repair_no,
+                a.repair_name,
+                a.oper_no,
+                a.oper_name,
+                date_format(a.oper_date,'%Y-%m-%d %H:%i:%s') as oper_date,
+                a.problem_description,
+                a.assignee,
+                a.status,
+                date_format(a.recept_time,'%Y-%m-%d %H:%i:%s') as recept_time,
+                a.station,
+                a.road,
+                a.entry,
+                a.fault_code
+        from omt_inf_faultlog_info a
+        where 1=1
+        <if test="id !='' and id!=null">
+            and id = #{id}
+        </if>
+        <if test="status !='' and status!=null">
+            and status = #{status}
+        </if>
+        <if test="assignee !='' and assignee!=null">
+            and assignee = #{assignee}
+        </if>
+        <if test="fault_name !='' and fault_name!=null">
+            and fault_name = #{fault_name}
+        </if>
+        <if test="fault_equipment !='' and fault_equipment!=null">
+            and fault_equipment = #{fault_equipment}
+        </if>
+        <if test="status1 !='' and status1!=null">
+            and status != '3'
+        </if>
+    </select>
+
+
+</mapper>

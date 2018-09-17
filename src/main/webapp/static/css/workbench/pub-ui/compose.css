@@ -1,0 +1,22 @@
+@charset "utf-8";
+/* CSS Document */
+.list-01{ height:44px; line-height:44px;}
+.list-01 li{ float:left; padding:0 20px; cursor:pointer;}
+.list-01 li a{ color:#fff; font-size:16px;}
+.list-01 li.open{ background:#00349d;}
+.list-02 dt{ width:80px; height:76px;}
+.list-03 dt{ width:118px; height:118px;}
+.list-03 dd{ width:620px;}
+
+
+
+.nav{ z-index:1;}
+.nav li{ float:left; position:relative;}
+.nav li:hover{ background:#00349d;}
+.nav li a{ display:block; line-height:44px; height:44px; border-top:1px solid #00349d; color:#fff; font-size:16px; padding:0 20px;}
+.nav li.on a{ border-top-color:#8ec31e; background:#00349d; color:#e8e8e8}
+.nav li dl{display:none; width:150px; position:absolute; left:-30px; top:42px; z-index:2}
+.nav li.hover dl{ display:block;}
+.nav li dl a{border-top:2px solid #305aa0 !important; background:url(../images/bg_dot_submenu.png) repeat !important; text-align:center; color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nav li dl dd:nth-child(1) a{ border-top:none !important;}
+

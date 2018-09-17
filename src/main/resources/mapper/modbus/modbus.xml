@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="modbusInfo">
+
+    <select id="addLoginLog" parameterType="com.omt.modbus.dto.ModbusLogDto" resultType="int">
+        insert into omt_inf_loginlog_info(
+          login_no
+        )
+        values (
+            #{login_no}
+        )
+    </select>
+
+    <select id="updateLoginLog" parameterType="com.omt.modbus.dto.ModbusLogDto" resultType="int">
+        UPDATE omt_inf_loginlog_info SET loginout_time = CURRENT_TIMESTAMP() where loginout_time is null
+    </select>
+
+    <select id="addTempAndHumLog">
+        insert into omt_inf_tempandhumidity_info(
+          date_time,
+          temp,
+          humidity
+        ) values (
+          current_timestamp(),
+          #{temp},
+          #{humidity}
+        )
+    </select>
+
+    <select id="loginLogQry" parameterType="com.omt.modbus.dto.ModbusLogDto"  resultType="com.omt.modbus.dto.ModbusLogDto">
+        select  date_format(login_time,'%Y-%m-%d %H:%i:%s') as login_time,
+                login_no,
+                date_format(loginout_time,'%Y-%m-%d %H:%i:%s') as logout_time
+        from omt_inf_loginlog_info
+        where 1=1
+        <if test="login_no != null and login_no !=''">
+            and login_no=#{login_no} and loginout_time is null
+        </if>
+    </select>
+
+    <select id="tempAndHumLogLogQry" parameterType="com.omt.modbus.dto.ModbusLogDto"  resultType="com.omt.modbus.dto.ModbusLogDto">
+        select  date_format(date_time,'%Y-%m-%d %H') as date,
+                temp,
+                humidity
+        from omt_inf_tempandhumidity_info
+        where 1=1
+        <if test="temp != '' and temp != null">
+            order by date_time desc LIMIT 0,1
+        </if>
+    </select>
+
+</mapper>

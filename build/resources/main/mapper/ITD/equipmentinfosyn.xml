@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="equipmentInfo">
+    <!--网络设备查询-->
+    <select id="netEquipmentQuery" parameterType="com.omt.informationManagement.dto.equipmnetInfoDto" resultType="com.omt.informationManagement.dto.equipmnetInfoDto">
+       SELECT id,equipment_name,equipment_model,equipment_address,address_orgcode,equipment_ip  FROM omt_inf_process_trac
+       WHERE equipment_typem = '0'
+       AND equipment_address = #{equipment_address}
+       AND address_orgcode = #{address_orgcode}
+    </select>
+
+    <!--ip关联设置-->
+    <!--ip录入流程表omt_inf_process_trac-->
+
+    <!--将要修改的网络设备ip，和对应的id插入临时表-->
+    <select id="insertiptoprocess" parameterType="com.omt.informationManagement.dto.equipmnetInfoDto" resultType="int">
+      update omt_inf_process_trac SET equipment_ip = #{equipment_ip} WHERE id = #{id}
+    </select>
+
+    <!--批量写入网络设备IP，更新omt_inf_process_trac字段equipment_ip-->
+    <select id="updateIP" parameterType="com.omt.informationManagement.dto.equipmnetInfoDto" resultType="int">
+        update omt_inf_process_trac set equipment_ip = #{equipment_ip} where id= #{id}
+    </select>
+    <!--ip录入返回数据表-->
+
+    <!--收费站车道查询-->
+    <select id="queryLane" parameterType="com.omt.informationManagement.dto.laneEquipmentDto" resultType="com.omt.informationManagement.dto.laneEquipmentDto">
+       SELECT org_code,org_name,dparent_id  FROM omt_sys_org_info WHERE dparent_id = #{dparent_id}
+    </select>
+
+    <!--故障设备统计分析-->
+    <select id="errorequipment" parameterType="com.omt.ITD.dto.EquipmentInfosynDto" resultType="com.omt.ITD.dto.EquipmentInfosynDto">
+        SELECT COUNT(*) as count,create_time FROM omt_tab_equipmentdata_info GROUP BY create_time
+    </select>
+</mapper>

@@ -1,0 +1,11 @@
+@charset "utf-8";
+/* CSS Document */
+.table-01{ width:100%;/*table-layout:fixed*/}
+.table-01 td{ border-bottom:1px dashed #ccc; padding:0 4px; height:25px; line-height:25px;/* padding:6px 4px; *padding:7px 4px;padding:7px 4px\9;*/ max-width:130px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;font-family:"宋体";}
+.text-ov{word-break:normal; word-wrap:normal;}
+.th-sty th{font-size:16px; font-weight:normal; height:29px; line-height:29px; background:url(../images/icon-h2line.png) repeat-x 0 bottom;}
+.table-02{ width:100%;}
+.table-03{ width:100%;}
+.table-03 td{ border-bottom:1px dashed #ccc; padding:6px 3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.table-04{ width:100%;}
+.table-04 td{ padding:2px 0; text-align:left;}
