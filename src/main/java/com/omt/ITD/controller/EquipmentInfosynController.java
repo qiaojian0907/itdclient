@@ -51,7 +51,7 @@ public class EquipmentInfosynController {
     }
 
     //测试
-    @RequestMapping(value = "/testmodbus")
+    @RequestMapping(value = "/bus")
     public static String test(){
         String resultMsg = "";
         try {

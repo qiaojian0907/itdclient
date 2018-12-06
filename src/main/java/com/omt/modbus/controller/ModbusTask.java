@@ -55,7 +55,7 @@ public class ModbusTask {
     /**
      * 登录日志、温湿日志、故障日志记录
      */
-    @Scheduled(cron = "0/5 * * * * *")
+    //@Scheduled(cron = "0/5 * * * * *")
     public void getModbusLog(){
 
         System.out.println("定时任务开始");
