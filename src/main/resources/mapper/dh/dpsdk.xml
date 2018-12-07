@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dpsdk">
+    <select id="getDpsdkLoginInfo" resultType="com.dh.dto.DpsdkLoginDto">
+        select m_strIp,m_nPort,m_strUser,m_strPassword from omt_inf_dpsdkloginin_info
+    </select>
+
+    <select id="getDpsdkAlarmType" resultType="com.dh.dto.DpsdkAlarmTypeDto">
+        select alarm_value from omt_inf_dpsdkalarmtype_info
+    </select>
+
+    <select id="addDpsdkAlarm" parameterType="com.dh.dto.DpsdkAlarmDto" resultType="int">
+        insert into omt_inf_dpsdkalarm_info(
+          ip,
+          alarm_type,
+          alarm_date,
+          alarm_event,
+          devId,
+          chanelId,
+          dealWith,
+          status
+        ) values (
+          #{ip},
+          #{alarm_type},
+          #{alarm_date},
+          #{alarm_event},
+          #{devId},
+          #{chanelId},
+          #{dealWith},
+          '0'
+        )
+    </select>
+
+    <select id="getDpsdkAlarmInfo" parameterType="com.dh.dto.DpsdkAlarmDto" resultType="com.dh.dto.DpsdkAlarmDto">
+        select
+          ip,
+          alarm_type,
+          alarm_date,
+          alarm_event,
+          devId,
+          chanelId,
+          dealWith
+        from omt_inf_dpsdkalarm_info
+        where 1=1
+        <if test="ip != null and ip != ''">
+            and ip=#{ip}
+        </if>
+        <if test="alarm_type != null and alarm_type != ''">
+            and alarm_type=#{alarm_type}
+        </if>
+        <if test="alarm_date != null and alarm_date != ''">
+            and alarm_date=#{alarm_date}
+        </if>
+        <if test="alarm_event != null and alarm_event != ''">
+            and alarm_event=#{alarm_event}
+        </if>
+        <if test="devId != null and devId != ''">
+            and devId=#{devId}
+        </if>
+        <if test="chanelId != null and chanelId != ''">
+            and chanelId=#{chanelId}
+        </if>
+        <if test="dealWith != null and dealWith != ''">
+            and dealWith=#{dealWith}
+        </if>
+        <if test="status != null and status != ''">
+            and status=#{status}
+        </if>
+    </select>
+
+    <select id="queryAlarmInfoForSend" parameterType="com.dh.dto.DpsdkAlarmDto" resultType="com.dh.dto.DpsdkAlarmDto">
+        select
+          ip,
+          alarm_type,
+          alarm_date,
+          alarm_event,
+          devId,
+          chanelId,
+          dealWith
+        from omt_inf_dpsdkalarm_info
+        where alarm_event='1' AND dealWith IN ('1','16') AND STATUS='0'
+    </select>
+
+    <select id="updateAlarmInfoStatus">
+        update omt_inf_dpsdkalarm_info set status='1' where alarm_event='1' AND dealWith IN ('1','16')
+    </select>
+</mapper>
